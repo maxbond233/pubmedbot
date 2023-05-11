@@ -1,0 +1,8 @@
+import requests
+
+url = 'https://pubmed.ncbi.nlm.nih.gov/'
+
+r = requests.get(url)
+
+print(r.status_code)
+print(r.headers)
