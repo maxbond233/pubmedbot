@@ -1,0 +1,21 @@
+import requests
+from bs4 import BeautifulSoup
+
+term = "scatac-seq"
+
+url = "https://pubmed.ncbi.nlm.nih.gov/?term=%s" %term
+
+r = requests.get(url)
+if r.status_code != 200: 
+    raise Exception()
+
+html_doc = r.text
+
+soup = BeautifulSoup(html_doc, "html.parser")
+
+art_nodes = soup.find_all("div", class_="docsum-content")
+
+
+for art in art_nodes:
+    title = art.find("a", class_="docsum-title")
+    print(title['href'], title.get_text())
