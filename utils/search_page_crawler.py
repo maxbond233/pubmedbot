@@ -1,4 +1,5 @@
 import requests
+import re
 
 from bs4 import BeautifulSoup
 from url_manager import UrlManager
@@ -52,8 +53,8 @@ class SearchPageCrawler():
 
 		for i in range(1, self.total_pages + 1):
 			soup = self.access_search_page(page = i)
-			articles = soup.find_all('a', {'class': 'docsum-title'})
-			for article in articles:
+			titles = soup.find_all('a', {'class': 'docsum-title'})
+			for article in titles:
 				href = article.get('href')
 				if href is None: continue
 				href = self.root_url + href
@@ -61,18 +62,23 @@ class SearchPageCrawler():
 
 	def get_article_basic_info(self):
 		'''
-		This function is used to get the article basic info.
+		This function is used to get the article basic info. 
+
 		'''
 
 		for i in range(1, self.total_pages + 1):
 			soup = self.access_search_page(page = i)
+			docsums = soup.find_all('div', {'class': 'docsum-content'})
+			# get the basic info from the docsum-content
 
-			# get the basic info from the docsum-title
-			articles = soup.find_all('div', {'class': 'docsum-content'})
-			title = articles.find('a', {'class': 'docsum-title'}).text
-			authors = soup.find('div', {'class': 'docsum-authors'}).text
-			pub_date = soup.find('div', {'class': 'docsum-pubdate'}).text
-			doi = soup.find('div', {'class': 'docsum-doi'}).text
+			for docsum in docsums:
+				pmid = docsum.find('span', {'class': 'docsum-pmid'}).text
+				title = docsum.find('a', {'class': 'docsum-title'}).text
+				journal = docsum.find('span', {'class': 'docsum-journal-citation'}).text
+
+				match = re.search(r"[^.]*", journal)
+				journal = match.group(0)
+				url = self.root_url + title.get('href')
 
 if __name__ == '__main__':
 	search_page_crawler = SearchPageCrawler(term='scRNA')
